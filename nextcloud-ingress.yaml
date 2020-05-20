@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nextcloud-ingress
+spec:
+  rules:
+  - host: docs.purlfamily.local
+    http:
+      paths:
+      - backend:
+          serviceName: nextcloud
+          servicePort: 80
