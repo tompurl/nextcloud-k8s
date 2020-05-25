@@ -13,9 +13,36 @@ spec:
   type: LoadBalancer
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nextcloud-data-nfs-share
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: 10.0.1.13
+    path: "/mnt/rpi_share/nextcloud-data"
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nc-pv-claim
+  name: nextcloud-data-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nc-pv-main-claim
   labels:
     app: nextcloud
 spec:
@@ -25,7 +52,7 @@ spec:
     requests:
       storage: 5Gi
 ---
-apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nextcloud
@@ -45,41 +72,46 @@ spec:
         tier: frontend
     spec:
       containers:
-      - image: nextcloud:apache
-        name: nextcloud
-        env:
-        - name: MYSQL_HOST
-          value: nextcloud-mysql
-        - name: MYSQL_DATABASE
-          value: nextcloud_db
-        - name: MYSQL_USER
-          value: nextcloud_user
-        - name: MYSQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-nc-user-pass
-              key: password
-        - name: MYSQl_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-root-pass
-              key: password
-        - name: NEXTCLOUD_ADMIN_USER
-          value: tom
-        - name: NEXTCLOUD_ADMIN_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: nextcloud-admin-pass
-              key: password
-        - name: NEXTCLOUD_TRUSTED_DOMAINS
-          value: docs.purlfamily.local
-        ports:
-        - containerPort: 80
+        - image: nextcloud:apache
           name: nextcloud
-        volumeMounts:
-        - name: nextcloud-persistent-storage
-          mountPath: /var/www/html
+          env:
+            - name: MYSQL_HOST
+              value: nextcloud-mysql
+            - name: MYSQL_DATABASE
+              value: nextcloud_db
+            - name: MYSQL_USER
+              value: nextcloud_user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-nc-user-pass
+                  key: password
+            - name: MYSQl_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-root-pass
+                  key: password
+            - name: NEXTCLOUD_ADMIN_USER
+              value: tom
+            - name: NEXTCLOUD_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-admin-pass
+                  key: password
+            - name: NEXTCLOUD_TRUSTED_DOMAINS
+              value: docs.purlfamily.local
+          ports:
+            - containerPort: 80
+              name: nextcloud
+          volumeMounts:
+            - name: nextcloud-persistent-main-storage
+              mountPath: /var/www/html
+            - name: nextcloud-persistent-data-storage
+              mountPath: /var/www/html/data
       volumes:
-      - name: nextcloud-persistent-storage
-        persistentVolumeClaim:
-          claimName: nc-pv-claim
+        - name: nextcloud-persistent-main-storage
+          persistentVolumeClaim:
+            claimName: nc-pv-main-claim
+        - name: nextcloud-persistent-data-storage
+          persistentVolumeClaim:
+            claimName: nextcloud-data-pvc
