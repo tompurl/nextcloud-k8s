@@ -56,15 +56,28 @@ just need to back that up.
 
 ### Everything Else Web-Related
 
-This includes everything else under ``/var/www/whatever``. 
+This includes everything else under ``/var/www/html``. 
 
-TODO
+``` bash
+NC_POD=$(kubectl get pods | grep nextcloud | grep -v mysql | grep -v svclb | awk '{print $1}')
+
+kubectl cp default/$NC_POD:/var/www/html ./html-backup
+
+# This backup contains the ``data`` dir, which we backup elsewhere
+rm -rf ./html-backup/data
+
+# Then zip it all up
+tar cfz html-backup.$(date +%Y%m%d%H%M).tgz html-backup/
+
+# Cleanup
+rm -rf html-backup
+```
 
 ### MySQL
 
 ``` bash
-NC_POD=$(kubectl get pods | grep nextcloud-mysql | grep -v svclb | awk '{print $1}')
+NC_SQL_POD=$(kubectl get pods | grep nextcloud-mysql | grep -v svclb | awk '{print $1}')
 DB_PASS="thisIsCool"
 
-(kubectl exec -it "$NC_POD" -- /usr/bin/mysqldump -u root --password=$DB_PASS nextcloud_db) > nextcloud_db.bkup.$(date +%Y%m%d%H%M).sql
+(kubectl exec -it "$NC_SQL_POD" -- /usr/bin/mysqldump -u root --password=$DB_PASS nextcloud_db) > nextcloud_db.bkup.$(date +%Y%m%d%H%M).sql
 ```
