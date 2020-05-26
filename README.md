@@ -9,7 +9,7 @@ charts don't support that setup very well.
 
 ## Requriements
 
-You need to include a =kustomization.yaml= file that looks something like
+You need to include a ``kustomization.yaml`` file that looks something like
 this:
 
 ``` yaml
@@ -56,7 +56,7 @@ just need to back that up.
 
 ### Everything Else Web-Related
 
-This includes everything else under =/var/www/whatever=. 
+This includes everything else under ``/var/www/whatever``. 
 
 TODO
 
