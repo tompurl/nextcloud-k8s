@@ -99,7 +99,7 @@ spec:
                   name: nextcloud-admin-pass
                   key: password
             - name: NEXTCLOUD_TRUSTED_DOMAINS
-              value: docs.purlfamily.local
+              value: docs.purlfamily.local docs.tompurl.com docs.destrocodpiece.wtf
           ports:
             - containerPort: 80
               name: nextcloud
