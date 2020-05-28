@@ -1,0 +1,29 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: nextcloud-cert
+  namespace: default
+spec:
+  # Secret names are always required.
+  secretName: nextcloud-cert-secret
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  organization:
+  - purlfamily.local
+  # The use of the common name field has been deprecated since 2000 and is
+  # discouraged from being used.
+  commonName: docs.purlfamily.local
+  isCA: false
+  keySize: 2048
+  keyAlgorithm: rsa
+  keyEncoding: pkcs1
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - docs.purlfamily.local
+    - docs.tompurl.com
+    - docs.destrocodpiece.wtf
+  secretName: nextcloud-cert-tls 
+  issuerRef:
+    name: selfsigned-issuer

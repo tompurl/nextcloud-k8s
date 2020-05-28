@@ -1,12 +1,18 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
   name: nextcloud-ingress
 spec:
+  tls:
+    - hosts:
+        - docs.purlfamily.local
+      secretName: nextcloud-cert-tls
   rules:
-  - host: docs.purlfamily.local
-    http:
-      paths:
-      - backend:
-          serviceName: nextcloud
-          servicePort: 80
+    - host: docs.purlfamily.local
+      http:
+        paths:
+          - backend:
+              serviceName: nextcloud
+              servicePort: 80
