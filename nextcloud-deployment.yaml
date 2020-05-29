@@ -28,9 +28,36 @@ spec:
     path: "/mnt/rpi_share/nextcloud-data"
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nextcloud-main-nfs-share
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: 10.0.1.13
+    path: "/mnt/rpi_share/nextcloud-main"
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nextcloud-data-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nextcloud-main-pvc
 spec:
   storageClassName: manual
   accessModes:
@@ -111,7 +138,7 @@ spec:
       volumes:
         - name: nextcloud-persistent-main-storage
           persistentVolumeClaim:
-            claimName: nc-pv-main-claim
+            claimName: nextcloud-main-pvc
         - name: nextcloud-persistent-data-storage
           persistentVolumeClaim:
             claimName: nextcloud-data-pvc
