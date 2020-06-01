@@ -1,4 +1,4 @@
 kustomization.yaml
 *~
-backups/
+*backups/
 nohup.out

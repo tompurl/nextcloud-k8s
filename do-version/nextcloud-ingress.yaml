@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "nginx"
+  name: nextcloud-ingress
+spec:
+  tls:
+    - hosts:
+        - docs.tompurl.com
+      secretName: nextcloud-cert-tls
+  rules:
+    - host: docs.tompurl.com
+      http:
+        paths:
+          - backend:
+              serviceName: nextcloud
+              servicePort: 80
