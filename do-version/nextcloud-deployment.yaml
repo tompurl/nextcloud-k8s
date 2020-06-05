@@ -22,6 +22,18 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nextcloud-data-pvc
+spec:
+  storageClassName: do-block-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
       storage: 10Gi
 ---
 apiVersion: apps/v1
@@ -72,13 +84,38 @@ spec:
                   key: password
             - name: NEXTCLOUD_TRUSTED_DOMAINS
               value: docs.purlfamily.local docs.tompurl.com docs.destrocodpiece.wtf
+            - name: APACHE_DISABLE_REWRITE_IP
+              value: "1"
+            - name: TRUSTED_PROXIES
+              value: 167.172.11.230
           ports:
             - containerPort: 80
               name: nextcloud
           volumeMounts:
             - name: nextcloud-persistent-main-storage
               mountPath: /var/www/html
+            - name: nextcloud-persistent-data-storage
+              mountPath: /var/www/html/data
+      initContainers:
+        - name: nextcloud-data-chmod-fix
+          image: busybox
+          command: ["/bin/chmod","-R","0770", "/data"]
+          volumeMounts:
+            - name: nextcloud-persistent-data-storage
+              mountPath: /data
+        - name: nextcloud-data-chown-fix
+          image: busybox
+          command: ["/bin/chown","-R","33:33", "/data"]
+          volumeMounts:
+            - name: nextcloud-persistent-data-storage
+              mountPath: /data
+      securityContext:
+        fsGroup: 33
       volumes:
         - name: nextcloud-persistent-main-storage
           persistentVolumeClaim:
             claimName: nextcloud-main-pvc
+        - name: nextcloud-persistent-data-storage
+          persistentVolumeClaim:
+            claimName: nextcloud-data-pvc
+
