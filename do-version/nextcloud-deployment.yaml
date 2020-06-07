@@ -88,6 +88,8 @@ spec:
               value: "1"
             - name: TRUSTED_PROXIES
               value: 167.172.11.230
+            - name: OVERWRITEPROTOCOL
+              value: https
           ports:
             - containerPort: 80
               name: nextcloud
